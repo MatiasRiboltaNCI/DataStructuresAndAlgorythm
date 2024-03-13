@@ -6,7 +6,9 @@ package com.yourapp.business;
 import com.yourapp.data.LikedSongsPlaylist;
 import com.yourapp.data.Playlist;
 import com.yourapp.data.Song;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -50,5 +52,17 @@ public class MusicManager {
     
     public Playlist getLikedSongsPlaylist(){
         return likedSongsPlaylist;
+    }
+    
+    public List<Song> searchSongs(String keyword){
+        List<Song> searchResults = new ArrayList<>();
+        keyword = keyword.toLowerCase();
+        
+        for (Song song : likedSongsPlaylist.getSongs()){
+            if (song.getTitle().toLowerCase().contains(keyword) || song.getArtist().toLowerCase().contains(keyword)){
+                searchResults.add(song);
+            }
+        }
+        return searchResults;
     }
 }

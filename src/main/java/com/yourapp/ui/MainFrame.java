@@ -18,11 +18,13 @@ public class MainFrame extends JFrame{
     private JList<String> songList;
     private JTextField titleField, artistField, genreField;
     private MusicManager musicManager;
+    private JTextField searchField;
+    private JButton searchButton;
 
     
     public MainFrame(){
         setTitle("Music Manager");
-        setSize(400, 300);
+        setSize(1200, 600);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         musicManager = new MusicManager();
         initUI();
@@ -45,6 +47,10 @@ public class MainFrame extends JFrame{
         titleField = new JTextField(10);
         artistField = new JTextField(10);
         genreField = new JTextField(10);
+        searchField = new JTextField(10);
+        searchButton = new JButton("Search");
+        
+        searchButton.addActionListener(e -> searchSongs());
         
         topPanel.add(new JLabel("Title:"));
         topPanel.add(titleField);
@@ -55,6 +61,9 @@ public class MainFrame extends JFrame{
         topPanel.add(addButton);
         topPanel.add(moveButton);
         topPanel.add(showButton);
+        topPanel.add(new JLabel("Search:"));
+        topPanel.add(searchField);
+        topPanel.add(searchButton);
         
         add(topPanel, BorderLayout.NORTH);
         
@@ -63,10 +72,22 @@ public class MainFrame extends JFrame{
         add(new JScrollPane(songList), BorderLayout.CENTER);
     }
     
+    private void searchSongs(){
+        String searchText = searchField.getText().toLowerCase();
+        DefaultListModel<String> model = new DefaultListModel<>();
+        
+        for(Song song : musicManager.getLikedSongsPlaylist().getSongs()){
+            if(song.getTitle().toLowerCase().contains(searchText) || song.getArtist().toLowerCase().contains(searchText)){
+                model.addElement(song.getTitle() + " - " + song.getArtist());
+            }
+        }
+        songList.setModel(model);
+    }
+    
     private void updateSongList(){
         DefaultListModel<String> model = new DefaultListModel<>();
         for (Song song : musicManager.getLikedSongsPlaylist().getSongs()){
-            model.addElement(song.getTitle());
+            model.addElement(song.getTitle() + " - " + song.getArtist());
         }
         songList.setModel(model);
     }
