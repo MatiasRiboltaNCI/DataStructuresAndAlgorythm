@@ -18,6 +18,7 @@ import java.util.Map;
 public class MusicManager {
     private Playlist likedSongsPlaylist;
     private Map<String, Playlist> genrePlaylists;
+    private boolean repeatPlaylist = false;
     
     public MusicManager(){
         this.likedSongsPlaylist = new LikedSongsPlaylist();
@@ -44,6 +45,19 @@ public class MusicManager {
         Playlist genrePlaylist = genrePlaylists.get(genre);
         genrePlaylist.addSong(lastAddedSong);
         //Assuming it would remain in liked songs too.
+    }
+    
+    public void deleteSongFromLiked(String title, String artist){
+        List<Song> songs = likedSongsPlaylist.getSongs();
+        songs.removeIf(song -> song.getTitle().equals(title) && song.getArtist().equals(artist));
+    }
+    
+    public void toggleRepeat(){
+        repeatPlaylist = !repeatPlaylist;
+    }
+    
+    public boolean isRepeatPlaylist(){
+        return repeatPlaylist;
     }
     
     public Playlist getPlaylist(String genre){

@@ -20,6 +20,7 @@ public class MainFrame extends JFrame{
     private MusicManager musicManager;
     private JTextField searchField;
     private JButton searchButton;
+    private JButton deleteButton, repeatButton;
 
     
     public MainFrame(){
@@ -65,11 +66,38 @@ public class MainFrame extends JFrame{
         topPanel.add(searchField);
         topPanel.add(searchButton);
         
+        deleteButton = new JButton("Delete Song");
+        deleteButton.addActionListener(e -> deleteSong());
+        topPanel.add(deleteButton);
+        
+        repeatButton = new JButton("Repeat Playlist");
+        repeatButton.addActionListener(e -> togglePlaylistRepeat());
+        topPanel.add(repeatButton);
+        
         add(topPanel, BorderLayout.NORTH);
         
         //Song list setup
         songList = new JList<>();
         add(new JScrollPane(songList), BorderLayout.CENTER);
+    }
+    
+    private void deleteSong(){
+        String selectedValue = songList.getSelectedValue();
+        if(selectedValue == null || selectedValue.isEmpty()){
+            return;
+        }
+        
+        String[] parts = selectedValue.split(" - ", 2);
+        String title = parts[0];
+        String artist = parts.length > 1 ? parts[1] : "";
+        
+        musicManager.deleteSongFromLiked(title, artist);
+        updateSongList();
+    }
+    
+    private void togglePlaylistRepeat(){
+        musicManager.toggleRepeat();
+        repeatButton.setText(musicManager.isRepeatPlaylist() ? "Disabble Repeat" : "Repeat Playlist");
     }
     
     private void searchSongs(){
