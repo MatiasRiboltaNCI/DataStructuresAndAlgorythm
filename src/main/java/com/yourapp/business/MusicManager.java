@@ -16,8 +16,8 @@ import java.util.Map;
  * @author matia
  */
 public class MusicManager {
-    private Playlist likedSongsPlaylist;
-    private Map<String, Playlist> genrePlaylists;
+    private final Playlist likedSongsPlaylist;
+    private final Map<String, Playlist> genrePlaylists;
     private boolean repeatPlaylist = false;
     
     public MusicManager(){
@@ -28,6 +28,7 @@ public class MusicManager {
     public void addSongToLiked(String title, String artist, String genre){
         Song song = new Song(title, artist, genre);
         likedSongsPlaylist.addSong(song);
+        System.out.println("Added song: " + song.getTitle());
     }
     
     public void moveLastAddedSongToGenre(String genre){
@@ -47,10 +48,23 @@ public class MusicManager {
         //Assuming it would remain in liked songs too.
     }
     
-    public void deleteSongFromLiked(String title, String artist){
-        List<Song> songs = likedSongsPlaylist.getSongs();
-        songs.removeIf(song -> song.getTitle().equals(title) && song.getArtist().equals(artist));
+    public void deleteSongFromLiked(String title, String artist) {
+    Song songToRemove = null;
+    for (Song song : likedSongsPlaylist.getSongs()) {
+        if (song.getTitle().equals(title) && song.getArtist().equals(artist)) {
+            songToRemove = song;
+            break;
+        }
     }
+    
+    if (songToRemove != null) {
+        likedSongsPlaylist.getSongs().remove(songToRemove);
+        System.out.println("Deleted song: " + songToRemove.getTitle()); // Confirm deletion
+    } else {
+        System.out.println("Song to delete not found."); // Debug output if not found
+    }
+}
+
     
     public void toggleRepeat(){
         repeatPlaylist = !repeatPlaylist;

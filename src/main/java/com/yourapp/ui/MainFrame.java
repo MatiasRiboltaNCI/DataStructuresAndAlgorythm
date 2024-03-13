@@ -20,12 +20,14 @@ public class MainFrame extends JFrame{
     private MusicManager musicManager;
     private JTextField searchField;
     private JButton searchButton;
-    private JButton deleteButton, repeatButton;
+    private JButton deleteButton;
+    private JButton repeatButton;
+    private JButton refreshButton;
 
     
     public MainFrame(){
         setTitle("Music Manager");
-        setSize(1200, 600);
+        setSize(1500, 400);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         musicManager = new MusicManager();
         initUI();
@@ -38,11 +40,17 @@ public class MainFrame extends JFrame{
         addButton = new JButton("Add Song");
         moveButton = new JButton("Move Song");
         showButton = new JButton("Show Playlist");
+        deleteButton = new JButton("Delete Song");
+        repeatButton = new JButton("Repeat Playlist");
+        refreshButton = new JButton("Refresh");
         
         //Listener stubs - to be implemented
         addButton.addActionListener(e -> addSong());
         moveButton.addActionListener(e -> moveSong());
         showButton.addActionListener(e -> showPlaylist());
+        deleteButton.addActionListener(e -> deleteSong());
+        repeatButton.addActionListener(e -> togglePlaylistRepeat());
+        refreshButton.addActionListener(e -> updateSongList());
         
         JPanel topPanel = new JPanel();
         titleField = new JTextField(10);
@@ -65,14 +73,9 @@ public class MainFrame extends JFrame{
         topPanel.add(new JLabel("Search:"));
         topPanel.add(searchField);
         topPanel.add(searchButton);
-        
-        deleteButton = new JButton("Delete Song");
-        deleteButton.addActionListener(e -> deleteSong());
         topPanel.add(deleteButton);
-        
-        repeatButton = new JButton("Repeat Playlist");
-        repeatButton.addActionListener(e -> togglePlaylistRepeat());
         topPanel.add(repeatButton);
+        topPanel.add(refreshButton);
         
         add(topPanel, BorderLayout.NORTH);
         
@@ -81,23 +84,27 @@ public class MainFrame extends JFrame{
         add(new JScrollPane(songList), BorderLayout.CENTER);
     }
     
-    private void deleteSong(){
-        String selectedValue = songList.getSelectedValue();
-        if(selectedValue == null || selectedValue.isEmpty()){
-            return;
-        }
-        
+    private void deleteSong() {
+    String selectedValue = songList.getSelectedValue();
+    if (selectedValue == null || selectedValue.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "No song selected for deletion.");
+        return;
+    }
+    
+        System.out.println("Attempting to delete: " + selectedValue); // Debug output
+
         String[] parts = selectedValue.split(" - ", 2);
         String title = parts[0];
         String artist = parts.length > 1 ? parts[1] : "";
-        
+    
         musicManager.deleteSongFromLiked(title, artist);
         updateSongList();
     }
+
     
     private void togglePlaylistRepeat(){
         musicManager.toggleRepeat();
-        repeatButton.setText(musicManager.isRepeatPlaylist() ? "Disabble Repeat" : "Repeat Playlist");
+        repeatButton.setText(musicManager.isRepeatPlaylist() ? "Disable Repeat" : "Repeat Playlist");
     }
     
     private void searchSongs(){
@@ -112,13 +119,13 @@ public class MainFrame extends JFrame{
         songList.setModel(model);
     }
     
-    private void updateSongList(){
+    private void updateSongList() {
         DefaultListModel<String> model = new DefaultListModel<>();
-        for (Song song : musicManager.getLikedSongsPlaylist().getSongs()){
-            model.addElement(song.getTitle() + " - " + song.getArtist());
-        }
-        songList.setModel(model);
+        for (Song song : musicManager.getLikedSongsPlaylist().getSongs()) {
+        model.addElement(song.getTitle() + " - " + song.getArtist());
     }
+        songList.setModel(model);
+}
     
     //Method stubs - to be implemented
     private void addSong(){

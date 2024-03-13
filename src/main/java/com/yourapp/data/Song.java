@@ -9,9 +9,9 @@ package com.yourapp.data;
  * @author matia
  */
 public class Song {
-    private String title;
-    private String artist;
-    private String genre;
+    private final String title;
+    private final String artist;
+    private final String genre;
     
     public Song(String title, String artist, String genre){
         this.title = title;
