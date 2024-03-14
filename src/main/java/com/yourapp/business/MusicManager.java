@@ -18,29 +18,22 @@ import java.util.Map;
 public class MusicManager {
     private Playlist likedSongsPlaylist;
     private Map<String, Playlist> genrePlaylists;
-    
     private boolean repeatPlaylist = false;
     
-    public Map<String, Playlist> getGenrePlaylists() {
-    return genrePlaylists;
-    }
-
     public MusicManager(){
         this.likedSongsPlaylist = new LikedSongsPlaylist();
         this.genrePlaylists = new HashMap<>();
     }
-    
+
     public void addSongToLiked(String title, String artist, String genre){
         Song song = new Song(title, artist, genre);
         likedSongsPlaylist.addSong(song);
         System.out.println("Added song: " + song.getTitle());
-        
         categorizeSongByGenre(song);
     }
     
     private void categorizeSongByGenre(Song song){
         genrePlaylists.putIfAbsent(song.getGenre(), new LikedSongsPlaylist());
-        
         Playlist genrePlaylist = genrePlaylists.get(song.getGenre());
         genrePlaylist.addSong(song);
     }
@@ -70,12 +63,16 @@ public class MusicManager {
         return repeatPlaylist;
     }
     
-    public Playlist getPlaylist(String genre){
-        return genrePlaylists.getOrDefault(genre, new LikedSongsPlaylist());
-    }
-    
     public Playlist getLikedSongsPlaylist(){
         return likedSongsPlaylist;
+    }
+    
+    public Map<String, Playlist> getGenrePlaylists() {
+    return genrePlaylists;
+    }
+    
+    public Playlist getPlaylist(String genre){
+        return genrePlaylists.getOrDefault(genre, new LikedSongsPlaylist());
     }
     
     public List<Song> searchSongs(String keyword){
@@ -88,5 +85,25 @@ public class MusicManager {
             }
         }
         return searchResults;
+    }
+    
+    public void deleteSong(String title, String artist) {
+        Song toDelete = null;
+        // Find the song in the liked songs playlist
+        for (Song song : likedSongsPlaylist.getSongs()) {
+            if (song.getTitle().equals(title) && song.getArtist().equals(artist)) {
+                toDelete = song;
+                break;
+            }
+        }
+
+        if (toDelete != null) {
+            // Remove from liked songs playlist
+            likedSongsPlaylist.removeSong(toDelete);
+            // Remove from all genre playlists
+            for (Playlist genrePlaylist : genrePlaylists.values()) {
+                genrePlaylist.removeSong(toDelete);
+            }
+        }
     }
 }

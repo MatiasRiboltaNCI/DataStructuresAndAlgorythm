@@ -15,14 +15,10 @@ import java.awt.*;
  * @author matia
  */
 public class MainFrame extends JFrame{
-    private JButton addButton, moveButton, showButton;
+    private JButton addButton, moveButton, showButton, deleteButton, repeatButton, refreshButton;
     private JList<String> songList;
-    private JTextField titleField, artistField, genreField;
+    private JTextField titleField, artistField, genreField, searchField;
     private MusicManager musicManager;
-    private JTextField searchField;
-    private JButton searchButton;
-    private JButton repeatButton;
-    private JButton refreshButton;
     private JComboBox<String> genreComboBox;
 
     
@@ -43,11 +39,13 @@ public class MainFrame extends JFrame{
         showButton = new JButton("Show Playlist");
         repeatButton = new JButton("Repeat Playlist");
         refreshButton = new JButton("Refresh");
+        deleteButton = new JButton("Delete");
         
         //Listener stubs - to be implemented
         addButton.addActionListener(e -> addSong());
         moveButton.addActionListener(e -> moveSong());
         showButton.addActionListener(e -> showPlaylist());
+        deleteButton.addActionListener(e -> deleteSong());
         repeatButton.addActionListener(e -> togglePlaylistRepeat());
         refreshButton.addActionListener(e -> updateSongList());
         
@@ -56,7 +54,7 @@ public class MainFrame extends JFrame{
         artistField = new JTextField(10);
         genreField = new JTextField(10);
         searchField = new JTextField(10);
-        searchButton = new JButton("Search");
+        JButton searchButton = new JButton("Search");
         
         searchButton.addActionListener(e -> searchSongs());
         
@@ -69,11 +67,19 @@ public class MainFrame extends JFrame{
         topPanel.add(addButton);
         topPanel.add(moveButton);
         topPanel.add(showButton);
+        topPanel.add(deleteButton);
         topPanel.add(new JLabel("Search:"));
         topPanel.add(searchField);
         topPanel.add(searchButton);
         topPanel.add(repeatButton);
         topPanel.add(refreshButton);
+        
+        add(topPanel, BorderLayout.NORTH);
+        
+        //Song list setup
+        songList = new JList<>();
+        songList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        add(new JScrollPane(songList), BorderLayout.CENTER);
         
         genreComboBox = new JComboBox<>();
         updateGenreComboBox();  // Populate it with genres from your music manager
@@ -81,31 +87,44 @@ public class MainFrame extends JFrame{
 
         topPanel.add(new JLabel("Select Genre:"));
         topPanel.add(genreComboBox);
-        
-        add(topPanel, BorderLayout.NORTH);
-        
-        //Song list setup
-        songList = new JList<>();
-        add(new JScrollPane(songList), BorderLayout.CENTER);
-    }
-    
-    private void updateGenreComboBox(){
-        genreComboBox.removeAllItems();
-        for (String genre : musicManager.getGenrePlaylists().keySet()){
-            genreComboBox.addItem(genre);
-        }
-    }
-    
-    private void showGenrePlaylist(){
-        String selectedGenre = (String) genreComboBox.getSelectedItem();
-        Playlist genrePlaylist = musicManager.getPlaylist(selectedGenre);
-        DefaultListModel<String> model = new DefaultListModel<>();
-        for(Song song : genrePlaylist.getSongs()){
-            model.addElement(song.getTitle() + " - " + song.getArtist());
-        }
-        songList.setModel(model);
     }
 
+    //Method stubs - to be implemented
+    private void addSong(){
+        String title = titleField.getText();
+        String artist = artistField.getText();
+        String genre = genreField.getText();
+        musicManager.addSongToLiked(title, artist, genre);
+        titleField.setText("");
+        artistField.setText("");
+        genreField.setText("");
+        updateSongList();
+        updateGenreComboBox(); //Method to refresh the song list UI.
+    }
+    
+    private void moveSong(){
+        String genre = genreField.getText();
+        musicManager.moveLastAddedSongToGenre(genre);
+        updateSongList(); //Refresh list to reflect changes
+    }
+    
+    private void showPlaylist(){
+        updateSongList();
+    }
+    
+    private void deleteSong() {
+        int selectedIndex = songList.getSelectedIndex();
+        if (selectedIndex != -1) {
+            String selectedValue = songList.getModel().getElementAt(selectedIndex);
+            String[] parts = selectedValue.split(" - ", 2);
+            String title = parts[0];
+            String artist = parts.length > 1 ? parts[1] : "";
+
+            musicManager.deleteSong(title, artist);
+            updateSongList();
+            updateGenreComboBox();
+        }
+    }
     
     private void togglePlaylistRepeat(){
         musicManager.toggleRepeat();
@@ -128,31 +147,25 @@ public class MainFrame extends JFrame{
         DefaultListModel<String> model = new DefaultListModel<>();
         for (Song song : musicManager.getLikedSongsPlaylist().getSongs()) {
         model.addElement(song.getTitle() + " - " + song.getArtist());
-    }
+        }
         songList.setModel(model);
-}
-    
-    //Method stubs - to be implemented
-    private void addSong(){
-        String title = titleField.getText();
-        String artist = artistField.getText();
-        String genre = genreField.getText();
-        musicManager.addSongToLiked(title, artist, genre);
-        titleField.setText("");
-        artistField.setText("");
-        genreField.setText("");
-        updateSongList();
-        updateGenreComboBox(); //Method to refresh the song list UI.
+    }
+        
+    private void updateGenreComboBox(){
+        genreComboBox.removeAllItems();
+        for (String genre : musicManager.getGenrePlaylists().keySet()){
+            genreComboBox.addItem(genre);
+        }
     }
     
-    private void moveSong(){
-        String genre = genreField.getText();
-        musicManager.moveLastAddedSongToGenre(genre);
-        updateSongList(); //Refresh list to reflect changes
-    }
-    
-    private void showPlaylist(){
-        updateSongList();
+    private void showGenrePlaylist(){
+        String selectedGenre = (String) genreComboBox.getSelectedItem();
+        Playlist genrePlaylist = musicManager.getPlaylist(selectedGenre);
+        DefaultListModel<String> model = new DefaultListModel<>();
+        for(Song song : genrePlaylist.getSongs()){
+            model.addElement(song.getTitle() + " - " + song.getArtist());
+        }
+        songList.setModel(model);
     }
     
     public static void main(String[] args){
