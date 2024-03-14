@@ -109,6 +109,18 @@ public class MainFrame extends JFrame{
     }
     
     private void showPlaylist(){
+        String selectedGenre = (String) JOptionPane.showInputDialog(
+            this,
+            "Select Genre",
+            "Show Playlist",
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            musicManager.getGenrePlaylists().keySet().toArray(new String[0]),
+            null);
+
+    if (selectedGenre != null) {
+        showPlaylistWindow(selectedGenre);
+    }
         updateSongList();
     }
     
@@ -167,6 +179,31 @@ public class MainFrame extends JFrame{
         }
         songList.setModel(model);
     }
+    
+    private void showPlaylistWindow(String genre) {
+    JDialog playlistDialog = new JDialog(this, "Playlist: " + genre, true);
+    playlistDialog.setSize(400, 300);
+    playlistDialog.setLayout(new BorderLayout());
+
+    DefaultListModel<String> model = new DefaultListModel<>();
+    Playlist playlist = musicManager.getPlaylist(genre);
+    for (Song song : playlist.getSongs()) {
+        model.addElement(song.getTitle() + " - " + song.getArtist());
+    }
+
+    JList<String> playlistSongs = new JList<>(model);
+    playlistDialog.add(new JScrollPane(playlistSongs), BorderLayout.CENTER);
+
+    JButton closeButton = new JButton("Close");
+    closeButton.addActionListener(e -> playlistDialog.dispose());
+    JPanel bottomPanel = new JPanel();
+    bottomPanel.add(closeButton);
+    playlistDialog.add(bottomPanel, BorderLayout.SOUTH);
+
+    playlistDialog.setLocationRelativeTo(this);
+    playlistDialog.setVisible(true);
+}
+
     
     public static void main(String[] args){
         SwingUtilities.invokeLater(() -> {
