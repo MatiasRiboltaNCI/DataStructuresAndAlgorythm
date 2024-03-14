@@ -91,21 +91,45 @@ public class MainFrame extends JFrame{
 
     //Method stubs - to be implemented
     private void addSong(){
-        String title = titleField.getText();
-        String artist = artistField.getText();
-        String genre = genreField.getText();
-        musicManager.addSongToLiked(title, artist, genre);
-        titleField.setText("");
-        artistField.setText("");
-        genreField.setText("");
-        updateSongList();
-        updateGenreComboBox(); //Method to refresh the song list UI.
+        String title = titleField.getText().trim();
+        String artist = artistField.getText().trim();
+        String genre = genreField.getText().trim();
+        if (!title.isEmpty() && !artist.isEmpty() && !genre.isEmpty()) {
+            musicManager.addSongToLiked(title, artist, genre);
+            titleField.setText("");
+            artistField.setText("");
+            genreField.setText("");
+            updateSongList();
+            updateGenreComboBox();
+        }else {
+            JOptionPane.showMessageDialog(this, "Title, artist, and genre fields must not be empty.", "Warning", JOptionPane.WARNING_MESSAGE);
+        }//Method to refresh the song list UI.
     }
     
     private void moveSong(){
-        String genre = genreField.getText();
-        musicManager.moveLastAddedSongToGenre(genre);
-        updateSongList(); //Refresh list to reflect changes
+        int selectedIndex = songList.getSelectedIndex();
+        if(selectedIndex != -1){
+            String selectedValue = songList.getModel().getElementAt(selectedIndex);
+            String[] parts = selectedValue.split(" - ", 2);
+            String title = parts[0];
+            String artist = parts.length > 1 ? parts[1] : "";
+            
+            String[] genres = musicManager.getGenrePlaylists().keySet().toArray(new String[0]);
+            String targetGenre = (String) JOptionPane.showInputDialog(
+            this,
+                    "Select the target genre for the song",
+                    "Move Song",
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    genres,
+                    genres[0]);
+            
+            if(targetGenre != null && !targetGenre.isEmpty()){
+                musicManager.moveSong(title, artist, targetGenre);
+                updateSongList();
+                updateGenreComboBox();
+            }
+        }
     }
     
     private void showPlaylist(){
@@ -158,7 +182,8 @@ public class MainFrame extends JFrame{
     private void updateSongList() {
         DefaultListModel<String> model = new DefaultListModel<>();
         for (Song song : musicManager.getLikedSongsPlaylist().getSongs()) {
-        model.addElement(song.getTitle() + " - " + song.getArtist());
+            String songRepresentation = String.format("%s - %s - %s", song.getTitle(), song.getArtist(), song.getGenre());
+        model.addElement(songRepresentation);
         }
         songList.setModel(model);
     }
@@ -175,7 +200,8 @@ public class MainFrame extends JFrame{
         Playlist genrePlaylist = musicManager.getPlaylist(selectedGenre);
         DefaultListModel<String> model = new DefaultListModel<>();
         for(Song song : genrePlaylist.getSongs()){
-            model.addElement(song.getTitle() + " - " + song.getArtist());
+            String songRepresentation = String.format("%s - %s - %s", song.getTitle(), song.getArtist(), song.getGenre());
+            model.addElement(songRepresentation);
         }
         songList.setModel(model);
     }

@@ -38,6 +38,33 @@ public class MusicManager {
         genrePlaylist.addSong(song);
     }
     
+    public void moveSong(String title, String artist, String targetGenre){
+        Song songToMove = null;
+        
+        for(Playlist playlist : genrePlaylists.values()){
+            for(Song song : playlist.getSongs()){
+                if(song.getTitle().equals(title) && song.getArtist().equals(artist)){
+                    songToMove = song;
+                    playlist.removeSong(song);
+                    break;
+                }
+            }
+            if(songToMove != null){
+                break;
+            }
+        }
+        
+        if (songToMove != null){
+            Song updateSong = new Song(title, artist, targetGenre);
+            getGenrePlaylists().get(targetGenre).addSong(updateSong);
+            
+            if(likedSongsPlaylist.getSongs().contains(songToMove)){
+                likedSongsPlaylist.removeSong(songToMove);
+                likedSongsPlaylist.addSong(updateSong);
+            }
+        }
+    }
+    
     public void moveLastAddedSongToGenre(String genre){
         if(likedSongsPlaylist.getSongs().isEmpty()){
             System.out.println("Liked playlist is empty.");
