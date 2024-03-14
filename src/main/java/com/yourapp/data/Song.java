@@ -4,6 +4,8 @@
  */
 package com.yourapp.data;
 
+import java.util.Objects;
+
 /**
  *
  * @author matia
@@ -30,4 +32,18 @@ public class Song {
     public String getGenre(){
         return genre;
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null || getClass() != obj.getClass()) return false;
+    Song song = (Song) obj;
+    return title.equals(song.title) && artist.equals(song.artist) && genre.equals(song.genre);
+}
+
+    @Override
+    public int hashCode() {
+    return Objects.hash(title, artist, genre);
+}
+
 }

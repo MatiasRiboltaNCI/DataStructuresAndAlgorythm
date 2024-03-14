@@ -15,7 +15,7 @@ import java.awt.*;
  * @author matia
  */
 public class MainFrame extends JFrame{
-    private JButton addButton, moveButton, showButton, deleteButton, repeatButton, refreshButton;
+    private JButton addButton, moveButton, showButton, deleteButton, refreshButton;
     private JList<String> songList;
     private JTextField titleField, artistField, genreField, searchField;
     private MusicManager musicManager;
@@ -24,7 +24,7 @@ public class MainFrame extends JFrame{
     
     public MainFrame(){
         setTitle("Music Manager");
-        setSize(1500, 400);
+        setSize(1200, 400);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         musicManager = new MusicManager();
         initUI();
@@ -37,7 +37,6 @@ public class MainFrame extends JFrame{
         addButton = new JButton("Add Song");
         moveButton = new JButton("Move Song");
         showButton = new JButton("Show Playlist");
-        repeatButton = new JButton("Repeat Playlist");
         refreshButton = new JButton("Refresh");
         deleteButton = new JButton("Delete");
         
@@ -46,7 +45,6 @@ public class MainFrame extends JFrame{
         moveButton.addActionListener(e -> moveSong());
         showButton.addActionListener(e -> showPlaylist());
         deleteButton.addActionListener(e -> deleteSong());
-        repeatButton.addActionListener(e -> togglePlaylistRepeat());
         refreshButton.addActionListener(e -> updateSongList());
         
         JPanel topPanel = new JPanel();
@@ -71,7 +69,6 @@ public class MainFrame extends JFrame{
         topPanel.add(new JLabel("Search:"));
         topPanel.add(searchField);
         topPanel.add(searchButton);
-        topPanel.add(repeatButton);
         topPanel.add(refreshButton);
         
         add(topPanel, BorderLayout.NORTH);
@@ -81,12 +78,12 @@ public class MainFrame extends JFrame{
         songList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         add(new JScrollPane(songList), BorderLayout.CENTER);
         
-        genreComboBox = new JComboBox<>();
-        updateGenreComboBox();  // Populate it with genres from your music manager
-        genreComboBox.addActionListener(e -> showGenrePlaylist());
+        //genreComboBox = new JComboBox<>();
+        //updateGenreComboBox();  // Populate it with genres from your music manager
+        //genreComboBox.addActionListener(e -> showGenrePlaylist());
 
-        topPanel.add(new JLabel("Select Genre:"));
-        topPanel.add(genreComboBox);
+        //topPanel.add(new JLabel("Select Genre:"));
+        //topPanel.add(genreComboBox);
     }
 
     //Method stubs - to be implemented
@@ -107,30 +104,34 @@ public class MainFrame extends JFrame{
     }
     
     private void moveSong(){
-        int selectedIndex = songList.getSelectedIndex();
-        if(selectedIndex != -1){
-            String selectedValue = songList.getModel().getElementAt(selectedIndex);
-            String[] parts = selectedValue.split(" - ", 2);
+    int selectedIndex = songList.getSelectedIndex();
+    if(selectedIndex != -1){
+        String selectedValue = songList.getModel().getElementAt(selectedIndex);
+        String[] parts = selectedValue.split(" - ", 3);
+        if (parts.length == 3) {
             String title = parts[0];
-            String artist = parts.length > 1 ? parts[1] : "";
-            
-            String[] genres = musicManager.getGenrePlaylists().keySet().toArray(new String[0]);
+            String artist = parts[1];
+            String currentGenre = parts[2]; // Added to reflect current genre extraction.
+
             String targetGenre = (String) JOptionPane.showInputDialog(
-            this,
-                    "Select the target genre for the song",
-                    "Move Song",
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,
-                    genres,
-                    genres[0]);
-            
-            if(targetGenre != null && !targetGenre.isEmpty()){
+                this,
+                "Select the target genre for the song",
+                "Move Song",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                musicManager.getGenrePlaylists().keySet().toArray(new String[0]),
+                currentGenre); // Current genre is now a fallback option.
+
+            if(targetGenre != null && !targetGenre.equals(currentGenre)){
                 musicManager.moveSong(title, artist, targetGenre);
-                updateSongList();
-                updateGenreComboBox();
+                updateSongList(); // Reflects the changes in the liked songs or current genre list.
+                updateGenreComboBox(); // Ensure the genre combo box is up-to-date.
             }
         }
+    } else {
+        JOptionPane.showMessageDialog(this, "No song selected for moving.", "Warning", JOptionPane.WARNING_MESSAGE);
     }
+}
     
     private void showPlaylist(){
         String selectedGenre = (String) JOptionPane.showInputDialog(
@@ -149,23 +150,23 @@ public class MainFrame extends JFrame{
     }
     
     private void deleteSong() {
-        int selectedIndex = songList.getSelectedIndex();
-        if (selectedIndex != -1) {
-            String selectedValue = songList.getModel().getElementAt(selectedIndex);
-            String[] parts = selectedValue.split(" - ", 2);
+    int selectedIndex = songList.getSelectedIndex();
+    if (selectedIndex != -1) {
+        String selectedValue = songList.getModel().getElementAt(selectedIndex);
+        String[] parts = selectedValue.split(" - ", 3);
+        if (parts.length == 3) {
             String title = parts[0];
-            String artist = parts.length > 1 ? parts[1] : "";
+            String artist = parts[1];
+            // The genre isn't used for deletion but is included for completeness.
 
             musicManager.deleteSong(title, artist);
-            updateSongList();
-            updateGenreComboBox();
+            updateSongList();  // Update the main song list
+            updateGenreComboBox();  // Update genres if needed
         }
+    } else {
+        JOptionPane.showMessageDialog(this, "No song selected for deletion.", "Warning", JOptionPane.WARNING_MESSAGE);
     }
-    
-    private void togglePlaylistRepeat(){
-        musicManager.toggleRepeat();
-        repeatButton.setText(musicManager.isRepeatPlaylist() ? "Disable Repeat" : "Repeat Playlist");
-    }
+}
     
     private void searchSongs(){
         String searchText = searchField.getText().toLowerCase();
@@ -180,20 +181,22 @@ public class MainFrame extends JFrame{
     }
     
     private void updateSongList() {
-        DefaultListModel<String> model = new DefaultListModel<>();
-        for (Song song : musicManager.getLikedSongsPlaylist().getSongs()) {
-            String songRepresentation = String.format("%s - %s - %s", song.getTitle(), song.getArtist(), song.getGenre());
-        model.addElement(songRepresentation);
-        }
-        songList.setModel(model);
+    // Assuming you want to show liked songs; adjust if you want to reflect another playlist.
+    DefaultListModel<String> model = new DefaultListModel<>();
+    for (Song song : musicManager.getLikedSongsPlaylist().getSongs()) {
+        model.addElement(song.getTitle() + " - " + song.getArtist() + " - " + song.getGenre());
     }
+    songList.setModel(model);
+}
         
     private void updateGenreComboBox(){
-        genreComboBox.removeAllItems();
-        for (String genre : musicManager.getGenrePlaylists().keySet()){
-            genreComboBox.addItem(genre);
-        }
+    genreComboBox.removeAllItems();
+    // This assumes your MusicManager correctly updates genres upon song deletion.
+    for (String genre : musicManager.getGenrePlaylists().keySet()){
+        genreComboBox.addItem(genre);
     }
+    // Optionally re-select a default or previously selected genre after update
+}
     
     private void showGenrePlaylist(){
         String selectedGenre = (String) genreComboBox.getSelectedItem();
